@@ -20,16 +20,23 @@ def T_8gaussians(z, scale=4.0, std=0.25):
     return centers[sector] + std * z
 
 
-def T_swissroll(z):
+def T_swissroll(z, noise_std=0.04):
     u = torch.sigmoid(z[:, 0])
-    t = 1.5 * math.pi * (1 + 2 * u)
+    theta = 0.5 * math.pi + 3.5 * math.pi * u
+    radius = 0.18 * theta
 
-    x = t * torch.cos(t)
-    y = t * torch.sin(t)
+    x = radius * torch.cos(theta)
+    y = radius * torch.sin(theta)
+    curve = torch.stack([x, y], dim=1)
 
-    out = torch.stack([x, y], dim=1) / 5.0
-    out[:, 1] += 0.25 * z[:, 1]
-    return out
+    tangent = torch.stack([
+        0.18 * torch.cos(theta) - radius * torch.sin(theta),
+        0.18 * torch.sin(theta) + radius * torch.cos(theta),
+    ], dim=1)
+    normal = torch.stack([-tangent[:, 1], tangent[:, 0]], dim=1)
+    normal = normal / normal.norm(dim=1, keepdim=True).clamp_min(1e-8)
+
+    return curve + noise_std * z[:, 1:2] * normal
 
 
 def T_twomoons(z):

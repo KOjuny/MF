@@ -1,3 +1,6 @@
+import argparse
+from pathlib import Path
+
 import torch
 import torch.nn.functional as F
 
@@ -42,13 +45,23 @@ def train_flow_matching(
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", default="8gaussians")
+    parser.add_argument("--steps", type=int, default=20000)
+    parser.add_argument("--batch-size", type=int, default=512)
+    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--save-dir", type=Path, default=Path("./results/models"))
+    args = parser.parse_args()
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
 
     model = train_flow_matching(
-        dataset="8gaussians",
-        steps=20000,
-        batch_size=512,
+        dataset=args.dataset,
+        steps=args.steps,
+        batch_size=args.batch_size,
+        lr=args.lr,
         device=device,
     )
 
-    torch.save(model.state_dict(), "flow_matching_8gaussians.pt")
+    args.save_dir.mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), args.save_dir / f"flow_matching_{args.dataset}.pt")
