@@ -12,12 +12,12 @@ def train_flow_matching(
     dataset="8gaussians",
     steps=20000,
     batch_size=512,
-    lr=1e-3,
+    lr=1e-4,
     sigma_min=0.01,
     device="cuda",
 ):
     model = FlowMatchingMLP().to(device)
-    opt = torch.optim.AdamW(model.parameters(), lr=lr)
+    opt = torch.optim.Adam(model.parameters(), lr=lr)
 
     for step in range(steps):
         _, x1 = sample_pair(batch_size, dataset, device=device)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", default="8gaussians")
     parser.add_argument("--steps", type=int, default=20000)
     parser.add_argument("--batch-size", type=int, default=512)
-    parser.add_argument("--lr", type=float, default=1e-3)
+    parser.add_argument("--lr", type=float, default=1e-4)
     parser.add_argument("--save-dir", type=Path, default=Path("./results/models"))
     args = parser.parse_args()
 
